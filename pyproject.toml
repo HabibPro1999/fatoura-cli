@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fatoura-cli"
 version = "0.1.0"
-description = "CLI pour generer des factures tunisiennes propres pour les freelances tunisiens"
+description = "CLI for generating clean PDF invoices for Tunisian freelancers"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [
   { name = "Mohamed Habib Soula" }
 ]
-keywords = ["cli", "facture", "invoice", "tunisie", "freelance"]
+keywords = ["cli", "invoice", "tunisia", "freelancer", "pdf"]
 classifiers = [
   "Environment :: Console",
   "Intended Audience :: End Users/Desktop",
