@@ -1,41 +1,72 @@
 # fatoura-cli
 
-Clean PDF invoice generator for Tunisian freelancers.
+Generate clean PDF invoices for Tunisian freelancers from the terminal.
 
-`fatoura-cli` is intentionally narrow: it helps Tunisian freelancers generate professional invoices quickly from the terminal, without spreadsheets or web apps.
+`fatoura-cli` is intentionally opinionated. It focuses on one use case and does it well: fast, local, professional invoice generation for freelancers in Tunisia.
 
 > [!IMPORTANT]
-> The repository and documentation are in English. The CLI prompts and generated invoices stay in French by design.
+> The repository, README, and release notes are in English. The CLI prompts and generated invoices stay in French on purpose.
 
-![Preview of a generated mock invoice](assets/mock-invoice.png)
+![Mock invoice preview](assets/mock-invoice.png)
 
-## Why this exists
+## Overview
 
-- save your business details once
-- reuse frequent clients
-- reuse frequent services
-- auto-increment invoice numbers like `FAC-000001`
-- auto-increment line references like `P-00001`
-- generate Tunisian-formatted totals like `13 750,000 DT`
-- keep all personal data local
+- built for Tunisian freelancers, not for generic invoicing
+- generates polished PDF invoices with French labels
+- keeps data local on your machine
+- remembers clients and recurring services
+- auto-increments invoice numbers like `FAC-000001`
+- auto-increments line references like `P-00001`
+- uses Tunisian number formatting like `13 750,000 DT`
 
-## Scope
+## Table of contents
 
-This project is for Tunisian freelancers only.
+- [Why this project exists](#why-this-project-exists)
+- [What it does](#what-it-does)
+- [Who it is for](#who-it-is-for)
+- [Quick start](#quick-start)
+- [Example workflow](#example-workflow)
+- [Local storage](#local-storage)
+- [Project files](#project-files)
+- [Privacy](#privacy)
+- [Roadmap](#roadmap)
+- [License](#license)
 
-- currency: Tunisian dinar (`DT`)
-- language: French invoice labels and prompts
-- local fields: `Code TVA`, `M/F`, bank information
+## Why this project exists
 
-This is not a multi-country invoicing engine.
+Most invoicing tools are too broad for a solo Tunisian freelancer.
 
-## Commands
+- spreadsheets are repetitive and easy to break
+- generic invoicing apps usually assume other tax fields, currencies, or layouts
+- web tools add accounts, subscriptions, and data sprawl you may not want
 
-| Command | What it does |
+`fatoura-cli` keeps the workflow small: fill the missing invoice details, review the summary, generate the PDF, move on.
+
+## What it does
+
+| Feature | Details |
 | --- | --- |
-| `fatoura init` | Save your profile, tax, bank, and output settings |
-| `fatoura create` | Create a new invoice with interactive prompts |
-| `fatoura list` | List previously generated invoices |
+| Profile setup | Save your name, address, VAT code, bank details, and default output directory once |
+| Client reuse | Pick a saved client or create a new one during invoice creation |
+| Service reuse | Pick a saved service or create a new one during invoice creation |
+| Invoice numbering | Automatic `FAC-000001` style invoice numbers |
+| Line references | Automatic `P-00001` style line references |
+| PDF output | Generates a clean invoice PDF matching the project template |
+| Local history | Keeps a local history of generated invoices |
+
+## Who it is for
+
+This tool is for Tunisian freelancers only.
+
+| Constraint | Current choice |
+| --- | --- |
+| Currency | Tunisian dinar (`DT`) |
+| Language | French prompts and invoice labels |
+| Tax fields | `Code TVA`, `M/F`, bank information |
+| Output style | Single professional PDF invoice layout |
+
+> [!NOTE]
+> This is not a multi-country invoicing engine. That limitation is deliberate.
 
 ## Quick start
 
@@ -44,7 +75,7 @@ This is not a multi-country invoicing engine.
 <details>
 <summary>macOS</summary>
 
-GitHub renders `<details>` blocks as collapsible sections. The official WeasyPrint documentation recommends installing WeasyPrint and its dependencies with Homebrew:
+The official WeasyPrint documentation recommends installing WeasyPrint and its dependencies with Homebrew:
 
 ```bash
 brew install weasyprint
@@ -63,7 +94,7 @@ sudo apt install python3-pip libpango-1.0-0 libharfbuzz0b libpangoft2-1.0-0 libh
 
 </details>
 
-### 2. Install the CLI
+### 2. Clone and install
 
 ```bash
 git clone https://github.com/HabibPro1999/fatoura-cli.git
@@ -79,7 +110,7 @@ pip install .
 fatoura init
 ```
 
-You will be prompted for:
+You will be asked for:
 
 - full name
 - city
@@ -89,38 +120,83 @@ You will be prompted for:
 - IBAN
 - output directory for generated PDFs
 
-### 4. Create your first invoice
+### 4. Create an invoice
 
 ```bash
 fatoura create
 ```
 
-The flow is interactive:
-
-1. choose an existing client or add a new one
-2. choose an existing service or add a new one
-3. review the invoice summary in the terminal
-4. generate the PDF
-
-### 5. Check invoice history
+### 5. View invoice history
 
 ```bash
 fatoura list
 ```
 
-## What gets stored locally
+## Example workflow
 
-> [!NOTE]
-> `fatoura-cli` does not send data to any remote service.
+```text
+$ fatoura create
 
-By default, app data lives in:
+Nouvelle facture
+
+Client
+  [1] ACME SARL (M/F 1234567A)
+  [n] Nouveau client
+
+Choix: 1
+
+Date
+Date de facture (JJ-MM-AAAA) [21-03-2026]:
+
+Lignes
+  [1] P-00001  Mobile application development  -  4 200,000 DT  (TVA 19%)
+  [n] Nouveau service
+
+Choix: 1
+Ajouter une autre ligne ? [y/N]: n
+
+Resume
+  Facture : FAC-000012
+  Client  : ACME SARL (M/F 1234567A)
+  Date    : 21-03-2026
+
+Generer le PDF ? [Y/n]: y
+PDF genere: /Users/you/fatoura-invoices/FAC-000012.pdf
+```
+
+## Commands
+
+| Command | Purpose |
+| --- | --- |
+| `fatoura init` | Save or update your business information |
+| `fatoura create` | Create a new invoice interactively |
+| `fatoura list` | Show locally generated invoice history |
+
+## Local storage
+
+> [!TIP]
+> `fatoura-cli` is local-first. It does not send invoice data to any remote service.
+
+By default, application data lives in:
 
 ```text
 ~/.fatoura-cli/
 ```
 
+Generated PDFs go to:
+
+```text
+~/fatoura-invoices/
+```
+
+You can override the app data directory with:
+
+```bash
+export FATOURA_HOME=/your/custom/path
+```
+
 <details>
-<summary>Stored files</summary>
+<summary>Stored local files</summary>
 
 - `data/config.json`
 - `data/clients.json`
@@ -130,25 +206,28 @@ By default, app data lives in:
 
 </details>
 
-Generated PDFs go to `~/fatoura-invoices/` by default unless you choose another directory during `fatoura init`.
+## Project files
 
-You can override the app data directory with:
-
-```bash
-export FATOURA_HOME=/your/custom/path
-```
-
-## Example files
-
-- `config.example.json` shows the expected configuration shape
-- `assets/mock-invoice.png` is a screenshot generated from fake data
-- `assets/mock-invoice.pdf` is the matching fake PDF preview
+| File | Purpose |
+| --- | --- |
+| `src/fatoura_cli/cli.py` | Main CLI logic |
+| `src/fatoura_cli/template.html` | Invoice HTML template used for PDF generation |
+| `config.example.json` | Example config structure |
+| `assets/mock-invoice.png` | Screenshot generated from fake data |
+| `assets/mock-invoice.pdf` | Matching fake PDF preview |
 
 ## Privacy
 
+- real user data is stored outside the repository by default
 - generated PDFs are ignored by git
 - local config and invoice history are ignored by git
-- the repository ships with mock data only
+- the repository contains mock assets only
+
+## Roadmap
+
+- [ ] better README demo assets
+- [ ] PyPI publishing
+- [ ] changelog for future releases
 
 ## License
 
