@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page {
+      size: A4;
+      margin: 15mm 15mm 32mm 15mm;
+
+      @bottom-center {
+        content: "Page " counter(page) " / " counter(pages);
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 8pt;
+        color: #888;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10pt;
+      color: #222;
+    }
+
+    .header {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      margin-bottom: 8mm;
+    }
+
+    .header-right {
+      text-align: right;
+    }
+
+    .header-right h1 {
+      font-size: 28pt;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #111;
+      line-height: 1;
+    }
+
+    .header-right .invoice-number {
+      font-size: 11pt;
+      font-weight: bold;
+      color: #111;
+      margin-bottom: 4px;
+    }
+
+    .barcode-container {
+      margin-top: 4px;
+    }
+
+    .barcode-container svg {
+      height: 18mm;
+      width: auto;
+    }
+
+    .rule {
+      border: none;
+      border-top: 2px solid #222;
+      margin: 4mm 0;
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6mm;
+    }
+
+    .client-block {
+      border: 1px solid #bbb;
+      padding: 4mm 5mm;
+      min-width: 65mm;
+    }
+
+    .client-block .label {
+      font-size: 9pt;
+      font-weight: bold;
+      color: #444;
+      letter-spacing: 1px;
+      margin-bottom: 2mm;
+    }
+
+    .client-block .name {
+      font-size: 11pt;
+      font-weight: bold;
+    }
+
+    .client-block .mf {
+      font-size: 9pt;
+      color: #555;
+      margin-top: 1mm;
+    }
+
+    .date-block {
+      border: 1px solid #bbb;
+      padding: 4mm 5mm;
+      display: flex;
+      align-items: center;
+    }
+
+    .date-block span {
+      font-size: 10pt;
+    }
+
+    .items-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+      margin-bottom: 4mm;
+    }
+
+    .items-table th {
+      background-color: #f0f0f0;
+      font-size: 9pt;
+      font-weight: bold;
+      padding: 2.5mm 3mm;
+      text-align: left;
+      border: 1px solid #ccc;
+    }
+
+    .items-table th.num   { width: 6%;  text-align: center; }
+    .items-table th.ref   { width: 14%; }
+    .items-table th.desc  { width: 37%; }
+    .items-table th.puht  { width: 18%; text-align: right; }
+    .items-table th.tva   { width: 8%;  text-align: center; }
+    .items-table th.total { width: 17%; text-align: right; }
+
+    .items-table td {
+      padding: 2.5mm 3mm;
+      border: 1px solid #ddd;
+      vertical-align: top;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .items-table td.num   { text-align: center; }
+    .items-table td.puht  { text-align: right; white-space: nowrap; }
+    .items-table td.tva   { text-align: center; white-space: nowrap; }
+    .items-table td.total { text-align: right; white-space: nowrap; }
+    .items-table tr { page-break-inside: avoid; }
+    .items-table thead { display: table-header-group; }
+
+    .bottom-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-top: 2mm;
+    }
+
+    .amount-words {
+      flex: 1;
+      padding-right: 10mm;
+      font-size: 9.5pt;
+      font-style: italic;
+      color: #333;
+      padding-top: 2mm;
+    }
+
+    .amount-words .label {
+      font-style: normal;
+      font-weight: bold;
+      margin-bottom: 1mm;
+      font-size: 9pt;
+      color: #444;
+    }
+
+    .totals-block {
+      min-width: 80mm;
+    }
+
+    .totals-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .totals-table td {
+      padding: 2mm 3mm;
+      font-size: 9.5pt;
+      border: 1px solid #ddd;
+    }
+
+    .totals-table td:last-child {
+      text-align: right;
+      white-space: nowrap;
+      min-width: 35mm;
+    }
+
+    .totals-table .net-row {
+      background-color: #222;
+      color: #fff;
+    }
+
+    .totals-table .net-row td {
+      font-weight: bold;
+      font-size: 11pt;
+      border: 1px solid #222;
+    }
+
+    .footer {
+      position: fixed;
+      left: 15mm;
+      right: 15mm;
+      bottom: 10mm;
+      padding-top: 3mm;
+      border-top: 1px solid #bbb;
+    }
+
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8pt;
+      color: #444;
+      line-height: 1.5;
+    }
+
+    .footer-right {
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="footer">
+    <div class="footer-content">
+      <div>
+        <p><strong>{{ config.name }}</strong></p>
+        <p>{{ config.city }}</p>
+        <p>{{ config.address }}</p>
+        <p>Code TVA : {{ config.tva_code }}</p>
+      </div>
+      <div class="footer-right">
+        <p><strong>INFORMATIONS BANCAIRES</strong></p>
+        <p>{{ config.bank_name }}</p>
+        <p>IBAN {{ config.iban }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="header">
+    <div class="header-right">
+      <h1>FACTURE</h1>
+      <div class="invoice-number">N° <strong>{{ invoice.number }}</strong></div>
+      <div class="barcode-container">{{ barcode_svg | safe }}</div>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <div class="meta-row">
+    <div class="client-block">
+      <div class="label">CLIENT</div>
+      <div class="name">{{ invoice.client.name }}</div>
+      <div class="mf">M/F {{ invoice.client.mf }}</div>
+    </div>
+    <div class="date-block">
+      <span>Date {{ invoice.date }}</span>
+    </div>
+  </div>
+
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th class="num">#</th>
+        <th class="ref">Référence</th>
+        <th class="desc">Description</th>
+        <th class="puht">PU HT</th>
+        <th class="tva">TVA</th>
+        <th class="total">Total HT</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in invoice.line_items %}
+      <tr>
+        <td class="num">{{ loop.index }}</td>
+        <td>{{ item.reference }}</td>
+        <td>{{ item.description }}</td>
+        <td class="puht">{{ item.unit_price_fmt }} DT</td>
+        <td class="tva">{{ item.tva_fmt }} %</td>
+        <td class="total">{{ item.total_ht_fmt }} DT</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="bottom-section">
+    <div class="amount-words">
+      <div class="label">Arrêtée la présente facture à la somme de :</div>
+      {{ invoice.amount_in_words }}
+    </div>
+    <div class="totals-block">
+      <table class="totals-table">
+        <tr>
+          <td>TOTAL HT</td>
+          <td>{{ invoice.total_ht_fmt }} DT</td>
+        </tr>
+        <tr>
+          <td>BASE TVA</td>
+          <td>{{ invoice.base_tva_fmt }} DT</td>
+        </tr>
+        <tr>
+          <td>TOTAL TVA</td>
+          <td>{{ invoice.total_tva_fmt }} DT</td>
+        </tr>
+        <tr class="net-row">
+          <td>NET À PAYER</td>
+          <td>{{ invoice.net_fmt }} DT</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

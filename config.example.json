@@ -1,0 +1,9 @@
+{
+  "name": "Ahmed Ben Salah",
+  "city": "Sousse",
+  "address": "12 Rue des Jasmins, Khzema",
+  "tva_code": "1452369B",
+  "bank_name": "Banque Exemple Tunisie",
+  "iban": "TN11 1000 2000 3000 4000 5000",
+  "output_dir": "~/fatoura-invoices"
+}
