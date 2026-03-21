@@ -78,20 +78,12 @@ def load_counters() -> dict:
     return load_json(COUNTERS_FILE, {"invoice": 1, "product": 1})
 
 
-def peek_number(key: str) -> int:
-    return int(load_counters().get(key, 1))
-
-
 def bump_number(key: str) -> int:
     counters = load_counters()
     value = int(counters.get(key, 1))
     counters[key] = value + 1
     save_json(COUNTERS_FILE, counters)
     return value
-
-
-def next_number(key: str) -> int:
-    return bump_number(key)
 
 
 def format_invoice_number(number: int) -> str:
@@ -190,7 +182,7 @@ def render_pdf(invoice: dict, config: dict) -> Path:
     try:
         from jinja2 import Environment
         from weasyprint import HTML
-    except Exception as exc:
+    except ImportError as exc:
         fail(
             "Impossible de charger la generation PDF. Installez les dependances Python avec `pip install .` "
             "et les bibliotheques systeme requises par WeasyPrint.\n"
@@ -231,15 +223,15 @@ def ask_non_empty(prompt: str, default: str = "") -> str:
 
 def ask_confirm(prompt: str, default: bool = True) -> bool:
     hint = "[Y/n]" if default else "[y/N]"
-    answer = ask(f"{prompt} {hint}").lower()
-    if not answer:
-        return default
-    if answer in {"y", "yes", "o", "oui"}:
-        return True
-    if answer in {"n", "no", "non"}:
-        return False
-    print("Reponse invalide. Entrez y ou n.")
-    return ask_confirm(prompt, default)
+    while True:
+        answer = ask(f"{prompt} {hint}").lower()
+        if not answer:
+            return default
+        if answer in {"y", "yes", "o", "oui"}:
+            return True
+        if answer in {"n", "no", "non"}:
+            return False
+        print("Reponse invalide. Entrez y ou n.")
 
 
 def ask_date(prompt: str, default: str) -> str:
@@ -365,7 +357,7 @@ def prompt_items() -> list[dict]:
             items.append(item)
             print(f"Ajoute: {service['description']}")
         else:
-            reference = format_product_ref(next_number("product"))
+            reference = format_product_ref(bump_number("product"))
             description = ask_non_empty("Description")
             unit_price = ask_positive_amount("Prix unitaire (DT)")
             tva = ask_percentage("TVA %", "0")
@@ -512,7 +504,7 @@ def cmd_create() -> None:
     if not line_items:
         fail("Aucune ligne ajoutee. Facture annulee.")
 
-    number = format_invoice_number(peek_number("invoice"))
+    number = format_invoice_number(bump_number("invoice"))
     totals = calculate_totals(line_items)
     invoice = {
         "number": number,
@@ -533,10 +525,9 @@ def cmd_create() -> None:
     print_summary(invoice)
     print()
     if not ask_confirm("Generer le PDF ?"):
-        print("Operation annulee.")
+        print("Operation annulee. Le numero de facture reserve n'est pas reutilise.")
         return
 
-    bump_number("invoice")
     output_path = render_pdf(invoice, config)
     save_history_entry(invoice)
     print(f"\nPDF genere: {output_path}")
