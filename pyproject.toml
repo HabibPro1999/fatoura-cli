@@ -22,6 +22,7 @@ classifiers = [
   "Topic :: Office/Business :: Financial :: Accounting",
 ]
 dependencies = [
+  "flask>=3.1,<4",
   "jinja2>=3.1.6,<4",
   "num2words>=0.5.14,<0.6",
   "python-barcode>=0.16.1,<0.17",
@@ -35,4 +36,4 @@ fatoura = "fatoura_cli.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-fatoura_cli = ["template.html"]
+fatoura_cli = ["template.html", "web/templates/*.html", "web/static/*"]

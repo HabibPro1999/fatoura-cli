@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Clients — Fatoura{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Clients</h1>
+</div>
+
+{% if clients %}
+<table class="data-table">
+  <thead>
+    <tr><th>Nom</th><th>M/F</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for client in clients %}
+    <tr>
+      <td>{{ client.name }}</td>
+      <td class="mono">{{ client.mf }}</td>
+      <td class="right">
+        <form method="post" action="{{ url_for('delete_client', index=loop.index0) }}"
+              onsubmit="return confirm('Supprimer ce client ?')">
+          <button class="btn danger small">Supprimer</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">Aucun client enregistré.</p>
+{% endif %}
+
+<div class="card">
+  <h2>Ajouter un client</h2>
+  <form method="post" action="{{ url_for('add_client') }}">
+    <div class="field-row">
+      <label class="grow">Nom <input name="name" required></label>
+      <label>M/F <input name="mf" required></label>
+    </div>
+    <button class="btn primary">Ajouter</button>
+  </form>
+</div>
+{% endblock %}

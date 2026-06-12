@@ -414,6 +414,25 @@ def calculate_totals(items: list[dict]) -> dict:
     }
 
 
+def assemble_invoice(number: str, invoice_date: str, client: dict, line_items: list[dict]) -> dict:
+    totals = calculate_totals(line_items)
+    return {
+        "number": number,
+        "date": invoice_date,
+        "client": client,
+        "line_items": line_items,
+        "total_ht": str(totals["total_ht"]),
+        "base_tva": str(totals["base_tva"]),
+        "total_tva": str(totals["total_tva"]),
+        "net": str(totals["net"]),
+        "total_ht_fmt": format_amount(totals["total_ht"]),
+        "base_tva_fmt": format_amount(totals["base_tva"]),
+        "total_tva_fmt": format_amount(totals["total_tva"]),
+        "net_fmt": format_amount(totals["net"]),
+        "amount_in_words": amount_in_words(totals["net"]),
+    }
+
+
 def print_summary(invoice: dict) -> None:
     print("\nResume")
     print(f"  Facture : {invoice['number']}")
@@ -435,14 +454,22 @@ def print_summary(invoice: dict) -> None:
 
 def save_history_entry(invoice: dict) -> None:
     history = load_json(HISTORY_FILE, [])
-    history.append(
-        {
-            "number": invoice["number"],
-            "client": invoice["client"]["name"],
-            "net": invoice["net_fmt"],
-            "date": invoice["date"],
-        }
-    )
+    entry = {
+        "number": invoice["number"],
+        "client": invoice["client"]["name"],
+        "net": invoice["net_fmt"],
+        "date": invoice["date"],
+        "source": {
+            "client": invoice["client"],
+            "line_items": invoice["line_items"],
+        },
+    }
+    for index, existing in enumerate(history):
+        if existing["number"] == entry["number"]:
+            history[index] = entry
+            break
+    else:
+        history.append(entry)
     save_json(HISTORY_FILE, history)
 
 
@@ -505,22 +532,7 @@ def cmd_create() -> None:
         fail("Aucune ligne ajoutee. Facture annulee.")
 
     number = format_invoice_number(bump_number("invoice"))
-    totals = calculate_totals(line_items)
-    invoice = {
-        "number": number,
-        "date": invoice_date,
-        "client": client,
-        "line_items": line_items,
-        "total_ht": str(totals["total_ht"]),
-        "base_tva": str(totals["base_tva"]),
-        "total_tva": str(totals["total_tva"]),
-        "net": str(totals["net"]),
-        "total_ht_fmt": format_amount(totals["total_ht"]),
-        "base_tva_fmt": format_amount(totals["base_tva"]),
-        "total_tva_fmt": format_amount(totals["total_tva"]),
-        "net_fmt": format_amount(totals["net"]),
-        "amount_in_words": amount_in_words(totals["net"]),
-    }
+    invoice = assemble_invoice(number, invoice_date, client, line_items)
 
     print_summary(invoice)
     print()
@@ -549,6 +561,21 @@ def cmd_list() -> None:
     print()
 
 
+def cmd_web(port: int) -> None:
+    try:
+        from .web import create_app
+    except ImportError:
+        fail("La dependance `flask` est manquante. Reinstallez le projet avec `pip install .`.")
+
+    import threading
+    import webbrowser
+
+    url = f"http://127.0.0.1:{port}"
+    print(f"Interface web: {url} (Ctrl+C pour arreter)")
+    threading.Timer(0.8, lambda: webbrowser.open(url)).start()
+    create_app().run(host="127.0.0.1", port=port)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Generer des factures tunisiennes en PDF")
     parser.add_argument("--version", action="version", version=f"fatoura-cli {__version__}")
@@ -556,6 +583,8 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("init", help="Configurer vos informations")
     subparsers.add_parser("create", help="Creer une nouvelle facture")
     subparsers.add_parser("list", help="Lister les factures generees")
+    web_parser = subparsers.add_parser("web", help="Lancer l'interface web locale")
+    web_parser.add_argument("--port", type=int, default=8765, help="Port local (defaut: 8765)")
     return parser
 
 
@@ -570,6 +599,8 @@ def main() -> None:
         cmd_create()
     elif args.command == "list":
         cmd_list()
+    elif args.command == "web":
+        cmd_web(args.port)
     else:
         parser.print_help()
 

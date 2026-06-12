@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Factures — Fatoura{% endblock %}
+{% block content %}
+{% if created %}
+<div class="banner success">
+  Facture {{ created }} générée.
+  <a href="{{ url_for('invoice_pdf', number=created) }}" target="_blank">Voir le PDF</a>
+</div>
+{% endif %}
+{% if updated %}
+<div class="banner success">
+  Facture {{ updated }} mise à jour.
+  <a href="{{ url_for('invoice_pdf', number=updated) }}" target="_blank">Voir le PDF</a>
+</div>
+{% endif %}
+
+<div class="page-head">
+  <h1>Factures</h1>
+  <a class="btn primary" href="{{ url_for('new_invoice') }}">Nouvelle facture</a>
+</div>
+
+<div class="stats">
+  <div class="stat">
+    <span class="stat-value">{{ count }}</span>
+    <span class="stat-label">facture{{ 's' if count != 1 }}</span>
+  </div>
+  <div class="stat">
+    <span class="stat-value">{{ total_fmt }} DT</span>
+    <span class="stat-label">total net</span>
+  </div>
+</div>
+
+{% if entries %}
+<table class="data-table">
+  <thead>
+    <tr><th>Facture</th><th>Client</th><th class="right">Net</th><th>Date</th><th class="right">Actions</th></tr>
+  </thead>
+  <tbody>
+    {% for entry in entries %}
+    <tr>
+      <td class="mono">{{ entry.number }}</td>
+      <td>{{ entry.client }}</td>
+      <td class="right mono">{{ entry.net }} DT</td>
+      <td>{{ entry.date }}</td>
+      <td class="right row-actions">
+        {% if entry.editable %}
+        <a href="{{ url_for('edit_invoice', number=entry.number) }}">Modifier</a>
+        {% endif %}
+        {% if entry.pdf_exists %}
+        <a href="{{ url_for('invoice_pdf', number=entry.number) }}" target="_blank">PDF</a>
+        {% elif not entry.editable %}
+        <span class="muted">—</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">
+  <p>Aucune facture générée pour le moment.</p>
+  <a class="btn primary" href="{{ url_for('new_invoice') }}">Créer ma première facture</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Services — Fatoura{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Services</h1>
+</div>
+
+{% if services %}
+<table class="data-table">
+  <thead>
+    <tr><th>Réf</th><th>Description</th><th class="right">PU HT</th><th class="right">TVA</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for service in services %}
+    <tr>
+      <td class="mono">{{ service.reference }}</td>
+      <td>{{ service.description }}</td>
+      <td class="right mono">{{ service.unit_price_fmt }} DT</td>
+      <td class="right mono">{{ service.tva_fmt }} %</td>
+      <td class="right">
+        <form method="post" action="{{ url_for('delete_service', index=loop.index0) }}"
+              onsubmit="return confirm('Supprimer ce service ?')">
+          <button class="btn danger small">Supprimer</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">Aucun service enregistré.</p>
+{% endif %}
+
+<div class="card">
+  <h2>Ajouter un service</h2>
+  <form method="post" action="{{ url_for('add_service') }}">
+    <div class="field-row">
+      <label class="grow">Description <input name="description" required></label>
+      <label>Prix unitaire (DT) <input name="unit_price" type="number" min="0.001" step="0.001" required></label>
+      <label>TVA % <input name="tva" type="number" min="0" step="0.001" value="0"></label>
+    </div>
+    <button class="btn primary">Ajouter</button>
+  </form>
+</div>
+{% endblock %}

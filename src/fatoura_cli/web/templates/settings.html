@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Paramètres — Fatoura{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Paramètres</h1>
+</div>
+
+<div class="card">
+  <h2>Vos informations</h2>
+  <form method="post" action="{{ url_for('save_settings') }}">
+    <div class="field-row">
+      <label class="grow">Nom complet <input name="name" value="{{ config.get('name', '') }}" required></label>
+      <label>Ville <input name="city" value="{{ config.get('city', '') }}" required></label>
+    </div>
+    <div class="field-row">
+      <label class="grow">Adresse <input name="address" value="{{ config.get('address', '') }}" required></label>
+      <label>Code TVA <input name="tva_code" value="{{ config.get('tva_code', '') }}" required></label>
+    </div>
+    <div class="field-row">
+      <label>Banque <input name="bank_name" value="{{ config.get('bank_name', '') }}" required></label>
+      <label class="grow">IBAN <input name="iban" value="{{ config.get('iban', '') }}" required></label>
+    </div>
+    <div class="field-row">
+      <label class="grow">Dossier de sortie des PDF
+        <input name="output_dir" value="{{ config.get('output_dir', default_output) }}" required>
+      </label>
+    </div>
+    <button class="btn primary">Enregistrer</button>
+  </form>
+</div>
+{% endblock %}

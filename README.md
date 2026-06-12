@@ -1,6 +1,6 @@
 # fatoura-cli
 
-Terminal invoice generator for Tunisian freelancers.
+Invoice generator for Tunisian freelancers, in the terminal or in a local web interface.
 
 Create clean PDF invoices, reuse clients and services, and keep your data local.
 
@@ -98,6 +98,14 @@ fatoura create
 fatoura list
 ```
 
+### Or use the web interface
+
+```bash
+fatoura web
+```
+
+Opens `http://127.0.0.1:8765` in your browser: create invoices, manage clients and services, edit your profile, and download PDFs. Same local data as the CLI.
+
 ## Example session
 
 ```text
@@ -137,6 +145,7 @@ PDF genere: /Users/you/fatoura-invoices/FAC-000012.pdf
 | `fatoura init` | Save or update your business information |
 | `fatoura create` | Create a new invoice interactively |
 | `fatoura list` | Show local invoice history |
+| `fatoura web` | Launch the local web interface (`--port`, default 8765) |
 
 ## Local data
 
@@ -177,6 +186,7 @@ export FATOURA_HOME=/your/custom/path
 | File | Purpose |
 | --- | --- |
 | `src/fatoura_cli/cli.py` | Main CLI logic |
+| `src/fatoura_cli/web/` | Local web interface (Flask) |
 | `src/fatoura_cli/template.html` | Invoice template used for PDF generation |
 | `config.example.json` | Example config structure |
 | `assets/mock-invoice.png` | Screenshot generated from fake data |
